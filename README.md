@@ -1,66 +1,116 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SKATELIZINE (Skatel Izin System)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Skatelizine (Skatel Izin System)** adalah aplikasi web perizinan dan dispensasi siswa berbasis Laravel. Aplikasi ini digunakan oleh siswa untuk mengajukan izin keluar lingkungan sekolah saat jam pelajaran berlangsung maupun mengajukan dispensasi ketika mengikuti kegiatan tertentu, serta memudahkan guru dalam memvalidasi, memantau statistik, dan mengekspor laporan perizinan.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Autentikasi & Hak Akses
+- Login menggunakan **NIS/NIP** (`no_induk`) dan kata sandi.
+- Pembagian peran pengguna (`siswa` dan `guru`) menggunakan middleware `CheckRole`.
+- Notifikasi aksi berbasis SweetAlert (`realrashid/sweet-alert`).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Peran Siswa
+- **Halaman Utama & Beranda**: Informasi sistem perizinan dan ringkasan pengajuan siswa.
+- **Pengajuan Izin**: Formulir pengajuan izin keluar sekolah dengan data siswa, alasan, serta unggah foto bukti (`jpeg`, `png`, `jpg`, maks. 2 MB).
+- **Pengajuan Dispensasi**: Formulir pengajuan dispensasi kegiatan beserta unggah foto bukti (`jpeg`, `png`, `jpg`, maks. 2 MB).
+- **Riwayat Pengajuan**: Melihat daftar pengajuan izin dan dispensasi milik siswa beserta status validasinya (default `Proses`).
+- **Profil Siswa**: Memperbarui alamat dan kata sandi akun.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Peran Guru
+- **Data & Validasi Pengajuan**: Melihat seluruh pengajuan izin dan dispensasi siswa serta memperbarui status validasi masing-masing pengajuan.
+- **Diagram Statistik**: Visualisasi grafik (Chart.js) untuk memantau jumlah izin dan dispensasi:
+  - Per tingkat kelas (`X`, `XI`, `XII`)
+  - Per subkelas (`A`–`G`)
+  - Detail izin per siswa pada kelas/subkelas tertentu
+- **Ekspor Excel**: Mengunduh laporan rekap jumlah izin dan dispensasi siswa per kelas ke file `izin_dispen_per_kelas.xlsx` (multi-sheet per kelas) menggunakan `maatwebsite/excel`.
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Backend**: PHP `^8.2`, Laravel `^11.9`
+- **Frontend**: Laravel Blade, Tailwind CSS, Alpine.js `^3.4.2`, Chart.js, Font Awesome
+- **Build Tool**: Vite `^5.0` (`laravel-vite-plugin`, `axios`, `postcss`, `autoprefixer`)
+- **Package Tambahan**:
+  - `maatwebsite/excel` (`^3.1`) — Ekspor data izin dan dispensasi ke Excel
+  - `realrashid/sweet-alert` (`^7.3`) — Notifikasi SweetAlert pada Laravel
+- **Database**: SQLite (default pada `.env.example`) atau MySQL/MariaDB
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Struktur Proyek
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```text
+skatelizine/
+├── app/
+│   ├── Exports/
+│   │   └── IzinDispenExport.php    # Logika ekspor Excel multi-sheet per kelas
+│   ├── Http/
+│   │   ├── Controllers/            # LoginController, SiswaController, GuruController, ProfileController
+│   │   └── Middleware/CheckRole.php # Middleware pembatasan peran (siswa/guru)
+│   └── Models/                     # User, Izin, Dispen
+├── database/
+│   ├── migrations/                 # Skema tabel users, izins, dispens, cache, jobs, sessions
+│   └── seeders/                    # DatabaseSeeder
+├── public/                         # Aset publik dan gambar
+├── resources/
+│   └── views/                      # Tampilan Blade (auth, siswa, guru)
+├── routes/
+│   └── web.php                     # Definisi rute web aplikasi
+├── .env.example                    # Contoh konfigurasi environment
+├── composer.json                   # Dependensi PHP & Laravel
+├── manifest.json                   # Web app manifest
+├── package.json                    # Dependensi frontend & skrip Vite
+└── vite.config.js                  # Konfigurasi Vite
+```
 
-## Laravel Sponsors
+## Konfigurasi Environment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Salin file `.env.example` menjadi `.env`, lalu sesuaikan pengaturannya sesuai kebutuhan lingkungan lokal Anda (lihat referensi lengkap pada `.env.example`).
 
-### Premium Partners
+Secara default pada `.env.example`, aplikasi menggunakan:
+- `DB_CONNECTION=sqlite` (dapat diubah ke `mysql` dengan mengisi `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD`)
+- `SESSION_DRIVER=database`, `QUEUE_CONNECTION=database`, dan `CACHE_STORE=database`
+- `FILESYSTEM_DISK=local`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Instalasi & Menjalankan Aplikasi
 
-## Contributing
+1. **Clone repositori dan masuk ke direktori proyek:**
+   ```bash
+   git clone https://github.com/BevandJanuartama/skatelizine.git
+   cd skatelizine
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. **Instal dependensi PHP dan JavaScript:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-## Code of Conduct
+3. **Siapkan file environment dan application key:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *(Di Windows PowerShell, gunakan `Copy-Item .env.example .env`)*
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Siapkan database dan jalankan migrasi:**
+   - Jika menggunakan SQLite (default `.env.example`), pastikan file `database/database.sqlite` tersedia.
+   - Jika menggunakan MySQL, buat database terlebih dahulu lalu atur kredensialnya di `.env`.
+   - Jalankan migrasi:
+     ```bash
+     php artisan migrate
+     ```
 
-## Security Vulnerabilities
+5. **Buat symbolic link untuk penyimpanan foto bukti (`public` disk):**
+   ```bash
+   php artisan storage:link
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6. **Build aset frontend dan jalankan server pengembangan:**
+   ```bash
+   npm run build
+   php artisan serve
+   ```
+   Untuk mode pengembangan dengan hot-reload aset Vite, jalankan di terminal terpisah:
+   ```bash
+   npm run dev
+   ```
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+   Aplikasi dapat diakses melalui `http://localhost:8000`.
